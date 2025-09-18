@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Sidebar from "./components/Sidebar";
 
-const geistSans = Geist({
+const geist = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
 });
@@ -14,19 +14,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Home Manual",
-  description: "Your home's reference guide: rooms, systems, maintenance, docs, and more.",
+  title: "Home Manual - Property Management",
+  description: "Manage your rental properties, appliances, maintenance, and vendors",
 };
-
-const navItems: Array<{ href: string; label: string }> = [
-  { href: "/", label: "Dashboard" },
-  { href: "/rooms", label: "Rooms" },
-  { href: "/appliances", label: "Appliances" },
-  { href: "/maintenance", label: "Maintenance" },
-  { href: "/inventory", label: "Inventory" },
-  { href: "/docs", label: "Docs" },
-  { href: "/vendors", label: "Vendors" },
-];
 
 export default function RootLayout({
   children,
@@ -35,20 +25,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <div className="min-h-screen grid grid-cols-[260px_1fr]">
-          <aside className="hidden sm:flex flex-col border-r border-black/10 dark:border-white/10 p-4 gap-4">
-            <div className="text-xl font-semibold">Home Manual</div>
-            <nav className="flex flex-col gap-2">
-              {navItems.map((item) => (
-                <Link key={item.href} href={item.href} className="px-3 py-2 rounded hover:bg-black/[.05] dark:hover:bg-white/[.06]">
-                  {item.label}
-                </Link>
-              ))}
-            </nav>
-            <div className="mt-auto text-xs text-black/60 dark:text-white/60">v0.1.0</div>
-          </aside>
-          <main className="min-h-screen p-4 sm:p-8">{children}</main>
+      <body className={`${geist.variable} ${geistMono.variable} antialiased`}>
+        <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
+          <Sidebar />
+          <main className="flex-1 ml-64 p-8">
+            {children}
+          </main>
         </div>
       </body>
     </html>
