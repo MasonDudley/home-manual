@@ -1,146 +1,161 @@
 import Link from 'next/link';
 
-// Mock data - you can later connect this to a database or JSON file
-const properties = [
-  {
-    id: 1,
-    nickname: "Main Home",
-    address: "123 Oak Street, Springfield, IL 62701",
-    type: "Primary Residence"
-  },
-  {
-    id: 2,
-    nickname: "Lake House",
-    address: "456 Lakeside Drive, Lake Geneva, WI 53147",
-    type: "Vacation Home"
-  },
-  {
-    id: 3,
-    nickname: "Downtown Condo",
-    address: "789 City Plaza, Unit 15A, Chicago, IL 60601",
-    type: "Investment Property"
-  }
-];
-
-const categories = [
-  {
-    name: "Appliances",
-    href: "/appliances",
-    icon: "🏠",
-    description: "Manuals, warranties, and specs"
-  },
-  {
-    name: "Maintenance",
-    href: "/maintenance", 
-    description: "Schedules, records, and reminders"
-  },
-  {
-    name: "Documents",
-    href: "/docs",
-    icon: "📄",
-    description: "Insurance, warranties, and contracts"
-  },
-  {
-    name: "Vendors",
-    href: "/vendors",
-    icon: "🔧",
-    description: "Contractors, services, and contacts"
-  }
-];
-
-export default function Home() {
+export default function Dashboard() {
   return (
-    <div className="flex flex-col gap-8 max-w-7xl mx-auto">
+    <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold mb-2">Home Manual Dashboard</h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          Manage all your properties, appliances, maintenance, and documents in one place
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          Dashboard
+        </h1>
+        <p className="text-gray-600 dark:text-gray-400 mt-2">
+          Welcome to your Rental Property Management System
         </p>
       </div>
 
-      {/* Properties Section */}
-      <section>
-        <h2 className="text-2xl font-semibold mb-4">Properties</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {properties.map((property) => (
-            <div
-              key={property.id}
-              className="rounded-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow bg-white dark:bg-gray-800"
-            >
-              <div className="mb-4">
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                  {property.nickname}
-                </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                  {property.type}
-                </p>
-              </div>
-              
-              <p className="text-gray-700 dark:text-gray-300 mb-4 text-sm">
-                {property.address}
-              </p>
+      {/* Quick Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+          <div className="flex items-center">
+            <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
+              <span className="text-2xl">🏢</span>
+            </div>
+            <div className="ml-4">
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">5</p>
+              <p className="text-gray-600 dark:text-gray-400">Properties</p>
+            </div>
+          </div>
+        </div>
 
-              {/* Quick Access Categories for each property */}
-              <div className="grid grid-cols-2 gap-2">
-                {categories.map((category) => (
-                  <Link
-                    key={category.name}
-                    href={`${category.href}?property=${property.id}`}
-                    className="flex items-center justify-center p-2 text-xs rounded-md bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                  >
-                    <span className="mr-1">{category.icon}</span>
-                    {category.name}
-                  </Link>
-                ))}
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+          <div className="flex items-center">
+            <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
+              <span className="text-2xl">🏠</span>
+            </div>
+            <div className="ml-4">
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">23</p>
+              <p className="text-gray-600 dark:text-gray-400">Appliances</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+          <div className="flex items-center">
+            <div className="p-2 bg-yellow-100 dark:bg-yellow-900 rounded-lg">
+              <span className="text-2xl">🔧</span>
+            </div>
+            <div className="ml-4">
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">3</p>
+              <p className="text-gray-600 dark:text-gray-400">Pending Tasks</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+          <div className="flex items-center">
+            <div className="p-2 bg-purple-100 dark:bg-purple-900 rounded-lg">
+              <span className="text-2xl">👥</span>
+            </div>
+            <div className="ml-4">
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">8</p>
+              <p className="text-gray-600 dark:text-gray-400">Vendors</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <Link
+          href="/properties/add"
+          className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow"
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Add Property
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 mt-1">
+                Register a new rental property
+              </p>
+            </div>
+            <span className="text-2xl">🏢➕</span>
+          </div>
+        </Link>
+
+        <Link
+          href="/maintenance/add"
+          className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow"
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Schedule Maintenance
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 mt-1">
+                Add a maintenance task
+              </p>
+            </div>
+            <span className="text-2xl">🔧➕</span>
+          </div>
+        </Link>
+
+        <Link
+          href="/vendors/add"
+          className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow"
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Add Vendor
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 mt-1">
+                Register a new service provider
+              </p>
+            </div>
+            <span className="text-2xl">👥➕</span>
+          </div>
+        </Link>
+      </div>
+
+      {/* Recent Activity */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+            Recent Activity
+          </h2>
+        </div>
+        <div className="p-6">
+          <div className="space-y-4">
+            <div className="flex items-center space-x-4">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <div className="flex-1">
+                <p className="text-gray-900 dark:text-white">
+                  Added new appliance: Refrigerator at Oak Street Property
+                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">2 hours ago</p>
               </div>
             </div>
-          ))}
+            <div className="flex items-center space-x-4">
+              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+              <div className="flex-1">
+                <p className="text-gray-900 dark:text-white">
+                  Scheduled maintenance: HVAC service at Maple Ave Property
+                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">1 day ago</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+              <div className="flex-1">
+                <p className="text-gray-900 dark:text-white">
+                  Added new vendor: Smith Plumbing Services
+                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">3 days ago</p>
+              </div>
+            </div>
+          </div>
         </div>
-      </section>
-
-      {/* Main Categories Section */}
-      <section>
-        <h2 className="text-2xl font-semibold mb-4">Manage</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {categories.map((category) => (
-            <Link
-              key={category.name}
-              href={category.href}
-              className="block p-6 rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all hover:border-blue-300 dark:hover:border-blue-600 bg-white dark:bg-gray-800"
-            >
-              <div className="text-2xl mb-3">{category.icon}</div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                {category.name}
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                {category.description}
-              </p>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* Quick Stats */}
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-800">
-          <h3 className="font-medium mb-2 text-gray-900 dark:text-white">Recent Activity</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            HVAC filter replaced at Main Home - 2 days ago
-          </p>
-        </div>
-        <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-800">
-          <h3 className="font-medium mb-2 text-gray-900 dark:text-white">Upcoming Maintenance</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Gutter cleaning due in 5 days
-          </p>
-        </div>
-        <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-800">
-          <h3 className="font-medium mb-2 text-gray-900 dark:text-white">Quick Stats</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            3 properties • 12 appliances • 8 vendors
-          </p>
-        </div>
-      </section>
+      </div>
     </div>
   );
 }
