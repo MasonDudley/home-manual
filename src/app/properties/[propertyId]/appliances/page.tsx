@@ -4,8 +4,22 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 
+// Define proper TypeScript interfaces
+interface Appliance {
+  id: number;
+  type: string;
+  brand: string;
+  model: string;
+  serialNumber: string;
+  location: string;
+  purchaseDate: string;
+  warranty: string;
+  condition: string;
+  notes: string;
+}
+
 // Mock appliances data
-const mockAppliances = [
+const mockAppliances: Appliance[] = [
   {
     id: 1,
     type: 'Refrigerator',
@@ -55,10 +69,10 @@ const conditions = ['Excellent', 'Good', 'Fair', 'Poor', 'Needs Replacement'];
 export default function PropertyAppliances() {
   const params = useParams();
   const propertyId = params?.propertyId;
-  const [appliances, setAppliances] = useState(mockAppliances);
+  const [appliances, setAppliances] = useState<Appliance[]>(mockAppliances);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState<number | null>(null);
-  const [editingAppliance, setEditingAppliance] = useState<any>(null);
+  const [editingAppliance, setEditingAppliance] = useState<Appliance | null>(null);
 
   const [formData, setFormData] = useState({
     type: '',
@@ -94,21 +108,21 @@ export default function PropertyAppliances() {
       // Update existing appliance
       setAppliances(appliances.map(app => 
         app.id === editingAppliance.id 
-          ? { ...formData, id: editingAppliance.id }
+          ? { ...formData, id: editingAppliance.id } as Appliance
           : app
       ));
     } else {
       // Add new appliance
-      const newAppliance = {
+      const newAppliance: Appliance = {
         ...formData,
-        id: appliances.length + 1
+        id: Math.max(...appliances.map(a => a.id), 0) + 1
       };
       setAppliances([...appliances, newAppliance]);
     }
     resetForm();
   };
 
-  const handleEdit = (appliance: any) => {
+  const handleEdit = (appliance: Appliance) => {
     setFormData(appliance);
     setEditingAppliance(appliance);
     setShowAddForm(true);
