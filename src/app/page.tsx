@@ -87,7 +87,7 @@ export default function Dashboard() {
             Welcome to Your Property Manager
           </h2>
           <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
-            Get started by adding your first rental property. You'll be able to track appliances, 
+            Get started by adding your first rental property. You will be able to track appliances, 
             maintenance, vendors, and more for each property.
           </p>
           <Link
