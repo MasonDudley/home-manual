@@ -62,8 +62,13 @@ const STORAGE_KEYS = {
   MAINTENANCE: 'rental_maintenance'
 };
 
+// Check if we're running in the browser
+const isClient = typeof window !== 'undefined';
+
 // Generic storage functions
 const saveToStorage = <T>(key: string, data: T[]): void => {
+  if (!isClient) return;
+  
   try {
     localStorage.setItem(key, JSON.stringify(data));
   } catch (error) {
@@ -72,6 +77,8 @@ const saveToStorage = <T>(key: string, data: T[]): void => {
 };
 
 const loadFromStorage = <T>(key: string): T[] => {
+  if (!isClient) return [];
+  
   try {
     const data = localStorage.getItem(key);
     return data ? JSON.parse(data) : [];
