@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { getAppliances, saveAppliance, updateAppliance, deleteAppliance, type Appliance } from '../../../lib/dataManager';
@@ -34,16 +34,17 @@ export default function PropertyAppliances() {
     notes: ''
   });
 
-  // Load appliances when component mounts
-  useEffect(() => {
-    loadAppliances();
-  }, [propertyId]);
-
-  const loadAppliances = () => {
+  // Memoize the loadAppliances function to prevent unnecessary re-renders
+  const loadAppliances = useCallback(() => {
     if (propertyId) {
       setAppliances(getAppliances(propertyId));
     }
-  };
+  }, [propertyId]);
+
+  // Load appliances when component mounts or propertyId changes
+  useEffect(() => {
+    loadAppliances();
+  }, [loadAppliances]);
 
   const resetForm = () => {
     setFormData({
