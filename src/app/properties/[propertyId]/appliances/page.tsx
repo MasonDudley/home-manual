@@ -1,62 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-
-// Define proper TypeScript interfaces
-interface Appliance {
-  id: number;
-  type: string;
-  brand: string;
-  model: string;
-  serialNumber: string;
-  location: string;
-  purchaseDate: string;
-  warranty: string;
-  condition: string;
-  notes: string;
-}
-
-// Mock appliances data
-const mockAppliances: Appliance[] = [
-  {
-    id: 1,
-    type: 'Refrigerator',
-    brand: 'Whirlpool',
-    model: 'WRF555SDHV',
-    serialNumber: 'WP2023001234',
-    location: 'Kitchen',
-    purchaseDate: '2023-01-15',
-    warranty: '2025-01-15',
-    condition: 'Excellent',
-    notes: 'Stainless steel, French door style'
-  },
-  {
-    id: 2,
-    type: 'Dishwasher',
-    brand: 'KitchenAid',
-    model: 'KDTM404ESS',
-    serialNumber: 'KA2023005678',
-    location: 'Kitchen',
-    purchaseDate: '2023-01-20',
-    warranty: '2024-01-20',
-    condition: 'Good',
-    notes: 'Built-in, stainless steel'
-  },
-  {
-    id: 3,
-    type: 'Washer',
-    brand: 'Samsung',
-    model: 'WF45R6100AP',
-    serialNumber: 'SM2022009876',
-    location: 'Laundry Room',
-    purchaseDate: '2022-08-10',
-    warranty: '2023-08-10',
-    condition: 'Fair',
-    notes: 'Front-loading, needs belt replacement soon'
-  }
-];
+import { getAppliances, saveAppliance, updateAppliance, deleteAppliance, type Appliance } from '../../../lib/dataManager';
 
 const applianceTypes = [
   'Refrigerator', 'Dishwasher', 'Oven/Range', 'Microwave', 'Washer', 'Dryer',
@@ -68,11 +15,12 @@ const conditions = ['Excellent', 'Good', 'Fair', 'Poor', 'Needs Replacement'];
 
 export default function PropertyAppliances() {
   const params = useParams();
-  const propertyId = params?.propertyId;
-  const [appliances, setAppliances] = useState<Appliance[]>(mockAppliances);
+  const propertyId = Number(params?.propertyId);
+  const [appliances, setAppliances] = useState<Appliance[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState<number | null>(null);
   const [editingAppliance, setEditingAppliance] = useState<Appliance | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({
     type: '',
@@ -85,6 +33,17 @@ export default function PropertyAppliances() {
     condition: 'Good',
     notes: ''
   });
+
+  // Load appliances when component mounts
+  useEffect(() => {
+    loadAppliances();
+  }, [propertyId]);
+
+  const loadAppliances = () => {
+    if (propertyId) {
+      setAppliances(getAppliances(propertyId));
+    }
+  };
 
   const resetForm = () => {
     setFormData({
@@ -102,34 +61,51 @@ export default function PropertyAppliances() {
     setShowAddForm(false);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingAppliance) {
-      // Update existing appliance
-      setAppliances(appliances.map(app => 
-        app.id === editingAppliance.id 
-          ? { ...formData, id: editingAppliance.id } as Appliance
-          : app
-      ));
-    } else {
-      // Add new appliance
-      const newAppliance: Appliance = {
-        ...formData,
-        id: Math.max(...appliances.map(a => a.id), 0) + 1
-      };
-      setAppliances([...appliances, newAppliance]);
+    setIsSubmitting(true);
+
+    try {
+      if (editingAppliance) {
+        // Update existing appliance
+        updateAppliance(editingAppliance.id, formData);
+      } else {
+        // Add new appliance
+        saveAppliance({
+          ...formData,
+          propertyId: propertyId
+        });
+      }
+      
+      loadAppliances(); // Reload appliances
+      resetForm();
+    } catch (error) {
+      console.error('Error saving appliance:', error);
+      alert('Failed to save appliance. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
-    resetForm();
   };
 
   const handleEdit = (appliance: Appliance) => {
-    setFormData(appliance);
+    setFormData({
+      type: appliance.type,
+      brand: appliance.brand,
+      model: appliance.model,
+      serialNumber: appliance.serialNumber,
+      location: appliance.location,
+      purchaseDate: appliance.purchaseDate,
+      warranty: appliance.warranty,
+      condition: appliance.condition,
+      notes: appliance.notes
+    });
     setEditingAppliance(appliance);
     setShowAddForm(true);
   };
 
   const handleDelete = (id: number) => {
-    setAppliances(appliances.filter(app => app.id !== id));
+    deleteAppliance(id);
+    loadAppliances(); // Reload appliances
     setShowDeleteModal(null);
   };
 
@@ -334,9 +310,10 @@ export default function PropertyAppliances() {
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                    disabled={isSubmitting}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
                   >
-                    {editingAppliance ? 'Update Appliance' : 'Add Appliance'}
+                    {isSubmitting ? 'Saving...' : (editingAppliance ? 'Update Appliance' : 'Add Appliance')}
                   </button>
                 </div>
               </form>
@@ -346,86 +323,108 @@ export default function PropertyAppliances() {
       )}
 
       {/* Appliances List */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        {appliances.map((appliance) => (
-          <div
-            key={appliance.id}
-            className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-6"
-          >
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  {appliance.type}
-                </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {appliance.brand} - {appliance.model}
-                </p>
-              </div>
-              <div className="flex space-x-2">
-                <button
-                  onClick={() => handleEdit(appliance)}
-                  className="text-blue-600 hover:text-blue-800 p-1"
-                  title="Edit"
-                >
-                  ✏️
-                </button>
-                <button
-                  onClick={() => setShowDeleteModal(appliance.id)}
-                  className="text-red-600 hover:text-red-800 p-1"
-                  title="Delete"
-                >
-                  🗑️
-                </button>
-              </div>
-            </div>
-
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">Serial:</span>
-                <span className="text-gray-900 dark:text-white font-mono">
-                  {appliance.serialNumber}
-                </span>
-              </div>
-              
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">Location:</span>
-                <span className="text-gray-900 dark:text-white">
-                  {appliance.location}
-                </span>
-              </div>
-
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">Condition:</span>
-                <span className={`px-2 py-1 rounded text-xs ${
-                  appliance.condition === 'Excellent' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' :
-                  appliance.condition === 'Good' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300' :
-                  appliance.condition === 'Fair' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300' :
-                  'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
-                }`}>
-                  {appliance.condition}
-                </span>
-              </div>
-
-              {appliance.warranty && (
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Warranty:</span>
-                  <span className="text-gray-900 dark:text-white">
-                    Until {new Date(appliance.warranty).toLocaleDateString()}
-                  </span>
-                </div>
-              )}
-
-              {appliance.notes && (
-                <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-                  <p className="text-gray-600 dark:text-gray-400 text-xs">
-                    {appliance.notes}
+      {appliances.length > 0 ? (
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+          {appliances.map((appliance) => (
+            <div
+              key={appliance.id}
+              className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-6"
+            >
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                    {appliance.type}
+                  </h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    {appliance.brand} - {appliance.model}
                   </p>
                 </div>
-              )}
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => handleEdit(appliance)}
+                    className="text-blue-600 hover:text-blue-800 p-1"
+                    title="Edit"
+                  >
+                    ✏️
+                  </button>
+                  <button
+                    onClick={() => setShowDeleteModal(appliance.id)}
+                    className="text-red-600 hover:text-red-800 p-1"
+                    title="Delete"
+                  >
+                    🗑️
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-600 dark:text-gray-400">Serial:</span>
+                  <span className="text-gray-900 dark:text-white font-mono">
+                    {appliance.serialNumber}
+                  </span>
+                </div>
+                
+                {appliance.location && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 dark:text-gray-400">Location:</span>
+                    <span className="text-gray-900 dark:text-white">
+                      {appliance.location}
+                    </span>
+                  </div>
+                )}
+
+                <div className="flex justify-between">
+                  <span className="text-gray-600 dark:text-gray-400">Condition:</span>
+                  <span className={`px-2 py-1 rounded text-xs ${
+                    appliance.condition === 'Excellent' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' :
+                    appliance.condition === 'Good' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300' :
+                    appliance.condition === 'Fair' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300' :
+                    'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
+                  }`}>
+                    {appliance.condition}
+                  </span>
+                </div>
+
+                {appliance.warranty && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 dark:text-gray-400">Warranty:</span>
+                    <span className="text-gray-900 dark:text-white">
+                      Until {new Date(appliance.warranty).toLocaleDateString()}
+                    </span>
+                  </div>
+                )}
+
+                {appliance.notes && (
+                  <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                    <p className="text-gray-600 dark:text-gray-400 text-xs">
+                      {appliance.notes}
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : (
+        /* Empty State */
+        <div className="text-center py-12">
+          <div className="text-6xl mb-4">🏠</div>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+            No appliances yet
+          </h3>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
+            Start tracking appliances for this property.
+          </p>
+          <button
+            onClick={() => setShowAddForm(true)}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg inline-flex items-center"
+          >
+            <span className="mr-2">➕</span>
+            Add Your First Appliance
+          </button>
+        </div>
+      )}
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
@@ -452,25 +451,6 @@ export default function PropertyAppliances() {
               </button>
             </div>
           </div>
-        </div>
-      )}
-
-      {appliances.length === 0 && (
-        <div className="text-center py-12">
-          <div className="text-6xl mb-4">🏠</div>
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-            No appliances yet
-          </h3>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
-            Start tracking appliances for this property.
-          </p>
-          <button
-            onClick={() => setShowAddForm(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg inline-flex items-center"
-          >
-            <span className="mr-2">➕</span>
-            Add Your First Appliance
-          </button>
         </div>
       )}
     </div>
