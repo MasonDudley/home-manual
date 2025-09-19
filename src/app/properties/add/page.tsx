@@ -3,34 +3,56 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { saveProperty } from '../../lib/dataManager';
 
 export default function AddProperty() {
   const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     address: '',
     type: 'Single Family Home',
-    bedrooms: '',
-    bathrooms: '',
-    sqft: '',
-    rent: '',
+    bedrooms: 0,
+    bathrooms: 0,
+    sqft: 0,
+    rent: 0,
     tenant: '',
     purchaseDate: '',
-    purchasePrice: '',
+    purchasePrice: 0,
     notes: ''
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, this would save to a database
-    console.log('Adding property:', formData);
-    router.push('/properties');
+    setIsSubmitting(true);
+
+    try {
+      // Save the property using the data manager
+      const savedProperty = saveProperty(formData);
+      console.log('Property saved:', savedProperty);
+      
+      // Redirect to properties page
+      router.push('/properties');
+    } catch (error) {
+      console.error('Error saving property:', error);
+      alert('Failed to save property. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    
+    // Convert number fields to numbers
+    const numberFields = ['bedrooms', 'bathrooms', 'sqft', 'rent', 'purchasePrice'];
+    const processedValue = numberFields.includes(name) 
+      ? (value === '' ? 0 : Number(value))
+      : value;
+
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [name]: processedValue
     });
   };
 
@@ -127,8 +149,9 @@ export default function AddProperty() {
                 <input
                   type="number"
                   name="bedrooms"
-                  value={formData.bedrooms}
+                  value={formData.bedrooms || ''}
                   onChange={handleChange}
+                  min="0"
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   placeholder="3"
                 />
@@ -141,8 +164,9 @@ export default function AddProperty() {
                   type="number"
                   step="0.5"
                   name="bathrooms"
-                  value={formData.bathrooms}
+                  value={formData.bathrooms || ''}
                   onChange={handleChange}
+                  min="0"
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   placeholder="2"
                 />
@@ -154,8 +178,9 @@ export default function AddProperty() {
                 <input
                   type="number"
                   name="sqft"
-                  value={formData.sqft}
+                  value={formData.sqft || ''}
                   onChange={handleChange}
+                  min="0"
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   placeholder="1200"
                 />
@@ -176,8 +201,9 @@ export default function AddProperty() {
                 <input
                   type="number"
                   name="rent"
-                  value={formData.rent}
+                  value={formData.rent || ''}
                   onChange={handleChange}
+                  min="0"
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   placeholder="1500"
                 />
@@ -223,8 +249,9 @@ export default function AddProperty() {
                 <input
                   type="number"
                   name="purchasePrice"
-                  value={formData.purchasePrice}
+                  value={formData.purchasePrice || ''}
                   onChange={handleChange}
+                  min="0"
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   placeholder="200000"
                 />
@@ -257,9 +284,10 @@ export default function AddProperty() {
             </Link>
             <button
               type="submit"
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              disabled={isSubmitting}
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Add Property
+              {isSubmitting ? 'Saving...' : 'Add Property'}
             </button>
           </div>
         </div>
